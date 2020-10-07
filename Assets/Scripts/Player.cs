@@ -2,17 +2,24 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private Camera cam;
-
     [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private GameObject[] hearts;
+    
     private int _currentScore = 0;
+    private int _lives = 5;
 
     void Update()
     {
-        ShotBullet();   
+        ShotBullet();
+        if (_lives == 0)
+        {
+            GameOver();
+        }
     }
 
     void FixedUpdate()
@@ -66,9 +73,16 @@ public class Player : MonoBehaviour
             }
             else
             {
+                Destroy(hearts[_lives - 1]);
+                _lives -= 1;
                 _currentScore -= 1;
             }
             scoreText.text = "Score: " + _currentScore;
         }
+    }
+
+    void GameOver()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }
