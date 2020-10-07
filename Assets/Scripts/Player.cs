@@ -1,21 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private Camera cam;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    [SerializeField] private TextMeshProUGUI scoreText;
+    private int _currentScore = 0;
 
-    // Update is called once per frame
     void Update()
     {
-        
+        ShotBullet();   
     }
 
     void FixedUpdate()
@@ -51,5 +48,27 @@ public class Player : MonoBehaviour
         var lockedPosX = Mathf.Clamp(targetPos.x, -maxWidth, maxWidth);
         
         return new Vector3(lockedPosX, lockedPosY, 0);
+    }
+
+    void ShotBullet()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+
+            RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+            
+            if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
+            {
+                _currentScore += 3;
+                Destroy(hit.transform.gameObject);
+            }
+            else
+            {
+                _currentScore -= 1;
+            }
+            scoreText.text = "Score: " + _currentScore;
+        }
     }
 }
