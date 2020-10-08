@@ -10,13 +10,14 @@ public class Ghost : MonoBehaviour
     [SerializeField] private Transform moveTransform;
     [SerializeField] private float speed;
     [SerializeField] private float waitTime;
+    [SerializeField] private float onScreenTimeLeft;
     private float _timeLeft;
     private Vector2 _randomDirection;
 
-    private const float MinX = -12.5f;
-    private const float MaxX =  7.1f;
-    private const float MinY = -5.7f;
-    private const float MaxY =  2.8f;
+    private const float MinX = -12.25f;
+    private const float MaxX =  6.75f;
+    private const float MinY = -5.5f;
+    private const float MaxY =  2.5f;
 
     void Start()
     {
@@ -27,6 +28,8 @@ public class Ghost : MonoBehaviour
     
     void Update()
     {
+        speed += Player.Level * 0.25;
+        GhostLifespan();
         CalculateMovementVector();
     }
 
@@ -42,6 +45,18 @@ public class Ghost : MonoBehaviour
         else
         {
             _timeLeft -= Time.deltaTime;
+        }
+    }
+
+    private void GhostLifespan()
+    {
+        if (onScreenTimeLeft < 0)
+        {
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            onScreenTimeLeft -= Time.deltaTime;
         }
     }
 }

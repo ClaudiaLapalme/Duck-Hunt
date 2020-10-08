@@ -8,10 +8,13 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private Camera cam;
     [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private GameObject[] hearts;
-    
+
+    private int _enemiesKilled = 0;
     private int _currentScore = 0;
     private int _lives = 5;
+    public static int Level = 0;
 
     void Update()
     {
@@ -69,6 +72,7 @@ public class Player : MonoBehaviour
             if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
             {
                 _currentScore += 3;
+                _enemiesKilled++;
                 Destroy(hit.transform.gameObject);
             }
             else
@@ -77,6 +81,13 @@ public class Player : MonoBehaviour
                 _lives -= 1;
                 _currentScore -= 1;
             }
+
+            if (_enemiesKilled % 10 == 0 && _enemiesKilled != 0)
+            {
+                Level++;
+            }
+
+            levelText.text = "Level: " + (Level + 1);
             scoreText.text = "Score: " + _currentScore;
         }
     }
