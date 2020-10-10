@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 2376188824321506549}
   - component: {fileID: 2376188824321506544}
   - component: {fileID: 2376188824321506545}
+  - component: {fileID: 5708851960559179467}
   m_Layer: 0
   m_Name: WhiteGhost
-  m_TagString: Untagged
+  m_TagString: Ghost
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,3 +130,19 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &5708851960559179467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2376188824321506548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c497ab6963c1754c81db894ad17f60b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveTransform: {fileID: 2376188824321506546}
+  speed: 0.5
+  waitTime: 0.75
+  onScreenTimeLeft: 5

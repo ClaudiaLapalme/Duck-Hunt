@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,22 +8,25 @@ public class Player : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private GameObject[] hearts;
+    [SerializeField] private GameObject enemies;
+    [SerializeField] private GameObject[] enemyPrefabs;
 
-    private int _enemiesKilled = 0;
-    private int _currentScore = 0;
+    private int _enemiesKilled;
+    private int _currentScore;
     private int _lives = 5;
-    public static int Level = 0;
+    public static int Level;
 
-    void Update()
+    private void Update()
     {
         ShotBullet();
         if (_lives == 0)
         {
             GameOver();
         }
+        InstantiateEnemies();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         PlayerMovement();
     }
@@ -64,24 +65,34 @@ public class Player : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            var enemiesKilledWithOneBullet = 0;
             Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
-            RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+            for (int i = 0; i < 2; i++)
+            {
+                RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
             
-            if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
-            {
-                _currentScore += 3;
-                _enemiesKilled++;
-                Destroy(hit.transform.gameObject);
-            }
-            else
-            {
-                Destroy(hearts[_lives - 1]);
-                _lives -= 1;
-                _currentScore -= 1;
+                if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
+                {
+                    _currentScore += 3;
+                    _enemiesKilled++;
+                    enemiesKilledWithOneBullet++;
+                    Destroy(hit.transform.gameObject);
+                }
+                else
+                {
+                    Destroy(hearts[_lives - 1]);
+                    _lives -= 1;
+                    _currentScore -= 1;
+                }
             }
 
+            if (enemiesKilledWithOneBullet == 2)
+            {
+                _currentScore += 5;
+            }
+            
             if (_enemiesKilled % 10 == 0 && _enemiesKilled != 0)
             {
                 Level++;
@@ -92,7 +103,30 @@ public class Player : MonoBehaviour
         }
     }
 
-    void GameOver()
+    private void InstantiateEnemies()
+    {
+        if (enemies.transform.childCount == 0)
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                var enemyColor = Random.Range(0, 3);
+                switch (enemyColor)
+                {
+                    case 0:
+                        Instantiate(enemyPrefabs[0], enemies.transform);
+                        break;
+                    case 1:
+                        Instantiate(enemyPrefabs[1], enemies.transform);
+                        break;
+                    case 2:
+                        Instantiate(enemyPrefabs[2], enemies.transform);
+                        break;
+                }
+            }
+        }
+    }
+
+    private static void GameOver()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }

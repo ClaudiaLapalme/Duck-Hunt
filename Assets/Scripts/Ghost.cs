@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Serialization;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class Ghost : MonoBehaviour
@@ -13,11 +9,12 @@ public class Ghost : MonoBehaviour
     [SerializeField] private float onScreenTimeLeft;
     private float _timeLeft;
     private Vector2 _randomDirection;
+    private int _currentLevel = 1;
 
-    private const float MinX = -12.25f;
-    private const float MaxX =  6.75f;
-    private const float MinY = -5.5f;
-    private const float MaxY =  2.5f;
+    private const float MinX = -8.3f;
+    private const float MaxX =  8.4f;
+    private const float MinY = -4.1f;
+    private const float MaxY =  4.0f;
 
     void Start()
     {
@@ -28,11 +25,11 @@ public class Ghost : MonoBehaviour
     
     void Update()
     {
-        speed += Player.Level * 0.25;
+        AdjustSpeed();
         GhostLifespan();
         CalculateMovementVector();
     }
-
+    
     private void CalculateMovementVector()
     {
         transform.position = Vector2.MoveTowards(transform.position, _randomDirection, speed * Time.deltaTime);
@@ -47,7 +44,7 @@ public class Ghost : MonoBehaviour
             _timeLeft -= Time.deltaTime;
         }
     }
-
+    
     private void GhostLifespan()
     {
         if (onScreenTimeLeft < 0)
@@ -57,6 +54,15 @@ public class Ghost : MonoBehaviour
         else
         {
             onScreenTimeLeft -= Time.deltaTime;
+        }
+    }
+    
+    private void AdjustSpeed()
+    {
+        if (_currentLevel != Player.Level)
+        {
+            speed += Player.Level * 0.25f;
+            _currentLevel++;
         }
     }
 }
