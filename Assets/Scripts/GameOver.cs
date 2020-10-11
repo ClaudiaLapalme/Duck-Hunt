@@ -5,13 +5,6 @@ public class GameOver : MonoBehaviour
 {
     public void OnClickButton(string option)
     {
-        if (option == "yes")
-        {
-            SceneManager.LoadScene(0);
-        }
-        else
-        {
-            Application.Quit();
-        }
+        SceneManager.LoadScene(option == "yes" ? 1 : 0);
     }
 }

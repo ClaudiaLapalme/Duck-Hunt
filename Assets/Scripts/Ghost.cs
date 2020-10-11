@@ -7,9 +7,10 @@ public class Ghost : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float waitTime;
     [SerializeField] private float onScreenTimeLeft;
+    
     private float _timeLeft;
     private Vector2 _randomDirection;
-    private int _currentLevel = 1;
+    private int _currentLevel;
 
     private const float MinX = -8.3f;
     private const float MaxX =  8.4f;
@@ -18,6 +19,7 @@ public class Ghost : MonoBehaviour
 
     void Start()
     {
+        speed += Player.Level * 0.5f; // setting the speed correctly once the enemy instantiates
         _timeLeft = waitTime;
         _randomDirection = new Vector2(Random.Range(MinX, MaxX), Random.Range(MinY, MaxY));
         moveTransform.position = _randomDirection;
@@ -49,7 +51,7 @@ public class Ghost : MonoBehaviour
     {
         if (onScreenTimeLeft < 0)
         {
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
         else
         {
@@ -57,13 +59,12 @@ public class Ghost : MonoBehaviour
         }
     }
     
-    //TODO: fix bug where the speed shoots up sometimes for an unknown reason
     private void AdjustSpeed()
     {
         if (_currentLevel != Player.Level)
         {
-            _currentLevel++;
-            speed += Player.Level * 0.25f;
+            _currentLevel = Player.Level;
+            speed += Player.Level * 0.5f;
         }
     }
 }

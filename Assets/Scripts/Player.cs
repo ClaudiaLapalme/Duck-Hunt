@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private GameObject[] hearts;
+    [SerializeField] private GameObject dog;
     [SerializeField] private GameObject enemies;
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private double specialVersionTime;
@@ -110,6 +111,7 @@ public class Player : MonoBehaviour
             
             if (enemiesHit == null || enemiesHit.Length == 0)
             {
+                InstantiateDog();
                 _currentScore -= 2; 
             }
             else
@@ -131,6 +133,7 @@ public class Player : MonoBehaviour
             
             if (enemiesHit == null || enemiesHit.Length == 0)
             {
+                InstantiateDog();
                 Destroy(hearts[_lives - 1]);
                 _lives -= 1;
                 _currentScore -= 1; 
@@ -230,6 +233,12 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void InstantiateDog()
+    {
+        var dogClone = Instantiate(dog);
+        Destroy(dogClone, 1);
+    }
+    
     private static void GameOver()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
