@@ -1,9 +1,9 @@
-#Hallow's Hunt
+# Hallow's Hunt
 
-###By Claudia Lapalme
-####ID :40058454
+### By Claudia Lapalme
+#### ID :40058454
 
-#####How to read the code
+##### How to read the code
 * separated into 4 scripts
     * GameOver.cs : game asks you if you want to replay
        * If yes, restarts game
@@ -24,20 +24,20 @@
        * spawns dog when the player misses
        * etc.
  
- #####Compile
+ ##### Compile
 You can just press play in the Unity editor if you want
 You can also build the unity project and then run the .exe that was built
 The game is available here: https://claudiabowie.itch.io/hallows-hunt
 
-#####How to play
-######Regular Mode
+##### How to play
+###### Regular Mode
 * left click to shoot bullet
 * kill 10 ghosts and encounter at least two witches to change level
 * you win 3 points per killed ghost (one shot required)
    * 5 bonus points if you kill overlapping targets
 * you get 5 points per killed witch (three shots required)
 
-######Special Mode
+###### Special Mode
 * Activated by pressing shift
 * Lasts 3 seconds
 * 5 second downtime between each special mode
