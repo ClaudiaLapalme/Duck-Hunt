@@ -66,6 +66,7 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             var enemiesKilledWithOneBullet = 0;
+            var firstHit = true;
             Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
@@ -75,13 +76,15 @@ public class Player : MonoBehaviour
             
                 if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
                 {
+                    firstHit = false;
                     _currentScore += 3;
                     _enemiesKilled++;
                     enemiesKilledWithOneBullet++;
                     Destroy(hit.transform.gameObject);
                 }
-                else
+                else if (firstHit)
                 {
+                    firstHit = false;
                     Destroy(hearts[_lives - 1]);
                     _lives -= 1;
                     _currentScore -= 1;
