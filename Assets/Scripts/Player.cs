@@ -14,6 +14,9 @@ public class Player : MonoBehaviour
     private int _enemiesKilled;
     private int _currentScore;
     private int _lives = 5;
+    private int _witchAppearances;
+    private int _witchHits;
+
     public static int Level;
 
     private void Update()
@@ -23,7 +26,8 @@ public class Player : MonoBehaviour
         {
             GameOver();
         }
-        InstantiateEnemies();
+        InstantiateGhosts();
+        InstantiateWitch();
     }
 
     private void FixedUpdate()
@@ -66,28 +70,38 @@ public class Player : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             var enemiesKilledWithOneBullet = 0;
-            var firstHit = true;
             Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
 
-            for (int i = 0; i < 2; i++)
-            {
-                RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+            RaycastHit2D[] enemiesHit = Physics2D.RaycastAll(mousePos2D, Vector2.zero );
             
-                if (hit.collider != null && hit.transform.gameObject.CompareTag("Ghost"))
+            if (enemiesHit == null || enemiesHit.Length == 0)
+            {
+                Destroy(hearts[_lives - 1]);
+                _lives -= 1;
+                _currentScore -= 1; 
+            }
+            else
+            {
+                foreach (var enemy in enemiesHit)
                 {
-                    firstHit = false;
-                    _currentScore += 3;
-                    _enemiesKilled++;
-                    enemiesKilledWithOneBullet++;
-                    Destroy(hit.transform.gameObject);
-                }
-                else if (firstHit)
-                {
-                    firstHit = false;
-                    Destroy(hearts[_lives - 1]);
-                    _lives -= 1;
-                    _currentScore -= 1;
+                    if (enemy.transform.gameObject.CompareTag("Ghost"))
+                    {
+                        _currentScore += 3;
+                        _enemiesKilled++;
+                        enemiesKilledWithOneBullet++;
+                        Destroy(enemy.transform.gameObject);
+                    }
+                    else if (enemy.transform.gameObject.CompareTag("Witch"))
+                    {
+                        _witchHits++;
+                        if (_witchHits == 3)
+                        {
+                            _witchHits = 0;
+                            _currentScore += 5;
+                            Destroy(enemy.transform.gameObject);
+                        }
+                    }
                 }
             }
 
@@ -95,9 +109,10 @@ public class Player : MonoBehaviour
             {
                 _currentScore += 5;
             }
-            
-            if (_enemiesKilled % 10 == 0 && _enemiesKilled != 0)
+
+            if (_enemiesKilled % 10 == 0 && _enemiesKilled != 0 && _witchAppearances >= 2)
             {
+                _witchAppearances = 0;
                 Level++;
             }
 
@@ -106,9 +121,9 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void InstantiateEnemies()
+    private void InstantiateGhosts()
     {
-        if (enemies.transform.childCount == 0)
+        if (!FindGameObjectInChildWithTag(enemies, "Ghost"))
         {
             for (var i = 0; i < 2; i++)
             {
@@ -129,8 +144,29 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void InstantiateWitch()
+    {
+        if (0 == Random.Range(0, 500))
+        {
+            _witchAppearances++;
+            Instantiate(enemyPrefabs[3], enemies.transform);
+        }
+    }
+
     private static void GameOver()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
+    private bool FindGameObjectInChildWithTag(GameObject parent, string matchedTag)
+    {
+        for (var i = 0; i < parent.transform.childCount; i++)
+        {
+            if (parent.transform.GetChild(i).gameObject.CompareTag(matchedTag))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
