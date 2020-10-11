@@ -10,24 +10,59 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject[] hearts;
     [SerializeField] private GameObject enemies;
     [SerializeField] private GameObject[] enemyPrefabs;
+    [SerializeField] private double specialVersionTime;
 
     private int _enemiesKilled;
     private int _currentScore;
     private int _lives = 5;
     private int _witchAppearances;
     private int _witchHits;
+    private double _timer;
+    private bool _isSpecial;
+    private const float DelayBetweenInputs = 0.1f;
+    private float _lastShot;
 
     public static int Level;
 
+    private void Start()
+    {
+        _timer = specialVersionTime;
+    }
+
     private void Update()
     {
-        ShotBullet();
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
+        {
+            _isSpecial = true;
+        }
+        if (_isSpecial && _timer > 0)
+        {
+            ShotBulletSpecial();
+            InstantiateGhosts(false);
+            InstantiateWitch(100);
+            _timer -= Time.deltaTime;
+        }
+        else
+        {
+            ShotBullet();
+            InstantiateGhosts(true);
+            InstantiateWitch(500);
+        }
         if (_lives == 0)
         {
             GameOver();
         }
-        InstantiateGhosts();
-        InstantiateWitch();
+
+        if (_isSpecial && _timer < 0)
+        {
+            _timer -= Time.deltaTime;
+        }
+        
+        if (_timer < -5) // must be at least 5 seconds between each time the player starts the variant mode
+        {
+            _timer = specialVersionTime;
+            _isSpecial = false;
+        }
     }
 
     private void FixedUpdate()
@@ -65,14 +100,33 @@ public class Player : MonoBehaviour
         return new Vector3(lockedPosX, lockedPosY, 0);
     }
 
-    void ShotBullet()
+    private void ShotBulletSpecial()
+    {
+        if (Input.GetMouseButton(0) && Time.time > _lastShot + DelayBetweenInputs)
+        {
+            Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
+            RaycastHit2D[] enemiesHit = Physics2D.RaycastAll(mousePos2D, Vector2.zero );
+            
+            if (enemiesHit == null || enemiesHit.Length == 0)
+            {
+                _currentScore -= 2; 
+            }
+            else
+            {
+                PointsWonForTheShot(enemiesHit, false);
+            }
+            ChangeLevelCheck();
+            _lastShot = Time.time;
+        }
+    }
+
+    private void ShotBullet()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            var enemiesKilledWithOneBullet = 0;
             Vector3 mousePos = cam.ScreenToWorldPoint(Input.mousePosition);
             Vector2 mousePos2D = new Vector2(mousePos.x, mousePos.y);
-
             RaycastHit2D[] enemiesHit = Physics2D.RaycastAll(mousePos2D, Vector2.zero );
             
             if (enemiesHit == null || enemiesHit.Length == 0)
@@ -83,70 +137,93 @@ public class Player : MonoBehaviour
             }
             else
             {
-                foreach (var enemy in enemiesHit)
-                {
-                    if (enemy.transform.gameObject.CompareTag("Ghost"))
-                    {
-                        _currentScore += 3;
-                        _enemiesKilled++;
-                        enemiesKilledWithOneBullet++;
-                        Destroy(enemy.transform.gameObject);
-                    }
-                    else if (enemy.transform.gameObject.CompareTag("Witch"))
-                    {
-                        _witchHits++;
-                        if (_witchHits == 3)
-                        {
-                            _witchHits = 0;
-                            _currentScore += 5;
-                            Destroy(enemy.transform.gameObject);
-                        }
-                    }
-                }
+                PointsWonForTheShot(enemiesHit, true);
             }
-
-            if (enemiesKilledWithOneBullet == 2)
-            {
-                _currentScore += 5;
-            }
-
-            if (_enemiesKilled % 10 == 0 && _enemiesKilled != 0 && _witchAppearances >= 2)
-            {
-                _witchAppearances = 0;
-                Level++;
-            }
-
-            levelText.text = "Level: " + (Level + 1);
-            scoreText.text = "Score: " + _currentScore;
+            
+            ChangeLevelCheck();
         }
     }
 
+    private void PointsWonForTheShot(RaycastHit2D[] enemiesHit, bool isRegular)
+    {
+        var enemiesKilledWithOneBullet = 0;
+        foreach (var enemy in enemiesHit)
+        {
+            if (enemy.transform.gameObject.CompareTag("Ghost"))
+            {
+                _currentScore = isRegular ? (_currentScore + 3) : (_currentScore + 1);
+                _enemiesKilled++;
+                enemiesKilledWithOneBullet++;
+                Destroy(enemy.transform.gameObject);
+            }
+            else if (enemy.transform.gameObject.CompareTag("Witch"))
+            {
+                _witchHits++;
+                if (_witchHits == 3)
+                {
+                    _witchHits = 0;
+                    _currentScore = isRegular ? (_currentScore + 5) : (_currentScore + 1);
+                    Destroy(enemy.transform.gameObject);
+                }
+            }
+        }
+        if (enemiesKilledWithOneBullet >= 2)
+        {
+            _currentScore += 5;
+        }
+    }
+
+    private void ChangeLevelCheck()
+    {
+        if (_enemiesKilled >= 10 && _enemiesKilled != 0 && _witchAppearances >= 2)
+        {
+            _enemiesKilled = 0;
+            _witchAppearances = 0;
+            Level++;
+        }
+
+        levelText.text = "Level: " + (Level + 1);
+        scoreText.text = "Score: " + _currentScore;
+    }
+    
     private void InstantiateGhosts()
     {
-        if (!FindGameObjectInChildWithTag(enemies, "Ghost"))
+        var enemyColor = Random.Range(0, 3);
+        switch (enemyColor)
+        {
+            case 0:
+                Instantiate(enemyPrefabs[0], enemies.transform);
+                break;
+            case 1:
+                Instantiate(enemyPrefabs[1], enemies.transform);
+                break;
+            case 2:
+                Instantiate(enemyPrefabs[2], enemies.transform);
+                break;
+        }
+    }
+
+    private void InstantiateGhosts(bool isRegular)
+    {
+        if (isRegular && !FindGameObjectInChildWithTag(enemies, "Ghost"))
         {
             for (var i = 0; i < 2; i++)
             {
-                var enemyColor = Random.Range(0, 3);
-                switch (enemyColor)
-                {
-                    case 0:
-                        Instantiate(enemyPrefabs[0], enemies.transform);
-                        break;
-                    case 1:
-                        Instantiate(enemyPrefabs[1], enemies.transform);
-                        break;
-                    case 2:
-                        Instantiate(enemyPrefabs[2], enemies.transform);
-                        break;
-                }
+                InstantiateGhosts();
+            }
+        }
+        else if (!isRegular)
+        {
+            if (0 == Random.Range(0, 10))
+            {
+                InstantiateGhosts();
             }
         }
     }
 
-    private void InstantiateWitch()
+    private void InstantiateWitch(int odds)
     {
-        if (0 == Random.Range(0, 500))
+        if (0 == Random.Range(0, odds))
         {
             _witchAppearances++;
             Instantiate(enemyPrefabs[3], enemies.transform);

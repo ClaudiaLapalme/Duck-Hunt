@@ -57,12 +57,13 @@ public class Ghost : MonoBehaviour
         }
     }
     
+    //TODO: fix bug where the speed shoots up sometimes for an unknown reason
     private void AdjustSpeed()
     {
         if (_currentLevel != Player.Level)
         {
-            speed += Player.Level * 0.25f;
             _currentLevel++;
+            speed += Player.Level * 0.25f;
         }
     }
 }
