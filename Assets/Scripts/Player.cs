@@ -7,11 +7,15 @@ public class Player : MonoBehaviour
     [SerializeField] private Camera cam;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI levelText;
+    [SerializeField] private TextMeshProUGUI timeText;
     [SerializeField] private GameObject[] hearts;
     [SerializeField] private GameObject dog;
     [SerializeField] private GameObject enemies;
     [SerializeField] private GameObject[] enemyPrefabs;
     [SerializeField] private double specialVersionTime;
+    [SerializeField] private float levelTimer;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] sfx;
 
     private int _enemiesKilled;
     private int _currentScore;
@@ -22,16 +26,27 @@ public class Player : MonoBehaviour
     private bool _isSpecial;
     private const float DelayBetweenInputs = 0.1f;
     private float _lastShot;
+    private float _levelTimeLeft;
 
     public static int Level;
 
     private void Start()
     {
+        _levelTimeLeft = levelTimer;
         _timer = specialVersionTime;
     }
 
     private void Update()
     {
+        QuitGame();
+        timeText.text = "Time left:" + Mathf.Round(_levelTimeLeft * 100f) / 100.0;
+        _levelTimeLeft -= Time.deltaTime;
+
+        if (_levelTimeLeft <= 0)
+        {
+            GameOver();
+        }
+        
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))
         {
             _isSpecial = true;
@@ -154,6 +169,7 @@ public class Player : MonoBehaviour
         {
             if (enemy.transform.gameObject.CompareTag("Ghost"))
             {
+                audioSource.PlayOneShot(sfx[1]);
                 _currentScore = isRegular ? (_currentScore + 3) : (_currentScore + 1);
                 _enemiesKilled++;
                 enemiesKilledWithOneBullet++;
@@ -164,6 +180,7 @@ public class Player : MonoBehaviour
                 _witchHits++;
                 if (_witchHits == 3)
                 {
+                    audioSource.PlayOneShot(sfx[0]);
                     _witchHits = 0;
                     _currentScore = isRegular ? (_currentScore + 5) : (_currentScore + 1);
                     Destroy(enemy.transform.gameObject);
@@ -183,6 +200,7 @@ public class Player : MonoBehaviour
             _enemiesKilled = 0;
             _witchAppearances = 0;
             Level++;
+            _levelTimeLeft = levelTimer;
         }
 
         levelText.text = "Level: " + (Level + 1);
@@ -208,7 +226,7 @@ public class Player : MonoBehaviour
 
     private void InstantiateGhosts(bool isRegular)
     {
-        if (isRegular && !FindGameObjectInChildWithTag(enemies, "Ghost"))
+        if (_enemiesKilled != 10 && isRegular && !FindGameObjectInChildWithTag(enemies, "Ghost"))
         {
             for (var i = 0; i < 2; i++)
             {
@@ -221,6 +239,10 @@ public class Player : MonoBehaviour
             {
                 InstantiateGhosts();
             }
+        }
+        else if (_enemiesKilled == 10 && _witchAppearances < 2)
+        {
+            InstantiateWitch(1);
         }
     }
 
@@ -235,6 +257,7 @@ public class Player : MonoBehaviour
 
     private void InstantiateDog()
     {
+        audioSource.PlayOneShot(sfx[2]);
         var dogClone = Instantiate(dog);
         Destroy(dogClone, 1);
     }
@@ -242,6 +265,14 @@ public class Player : MonoBehaviour
     private static void GameOver()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
+    private static void QuitGame()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene(0);
+        }
     }
 
     private bool FindGameObjectInChildWithTag(GameObject parent, string matchedTag)
